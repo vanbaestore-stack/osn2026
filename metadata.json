@@ -1,0 +1,6 @@
+{
+  "name": "OSNLink — OSN-K Informatika 2026",
+  "description": "Dashboard Belajar, Bank Soal Latihan & Pembahasan Lengkap OSN-K Informatika 2026.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

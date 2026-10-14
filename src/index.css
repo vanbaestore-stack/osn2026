@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --color-sand: #F2F1E8;
+  --color-sandDark: #E5E4DA;
+  --color-obsidian: #161615;
+  --color-obsidianSoft: #252523;
+  --color-cardGray: #F7F6F2;
+  --color-borderLight: #E6E5E0;
+}
+
+body {
+  background-color: #FFFFFF;
+  color: #161615;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Diagonal Hatched Bar Pattern matching reference chart */
+.bar-hatched {
+  background-image: repeating-linear-gradient(
+    135deg,
+    #A8A79E 0px,
+    #A8A79E 1.75px,
+    transparent 1.75px,
+    transparent 5.5px
+  );
+  border: 1px solid #C9C8BE;
+}
+
+/* Card transitions */
+.biz-card-light {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E5E0;
+  transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.biz-card-light:hover {
+  border-color: #BDBCB4;
+  box-shadow: 0 8px 24px -8px rgba(22, 22, 21, 0.07);
+}
+
+.biz-card-tinted {
+  background-color: #F7F6F2;
+  border: 1px solid #ECEBE6;
+  transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.biz-card-tinted:hover {
+  background-color: #FFFFFF;
+  border-color: #BDBCB4;
+  box-shadow: 0 8px 24px -8px rgba(22, 22, 21, 0.07);
+}
+
+/* Signature Dark Active Card */
+.biz-card-dark {
+  background-color: #161615;
+  color: #FFFFFF;
+  border: 1px solid #161615;
+  box-shadow: 0 18px 38px -10px rgba(22, 22, 21, 0.28);
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8D7CE;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8B7AE;
+}
+
+/* Smooth touch momentum scrolling on mobile */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+}
