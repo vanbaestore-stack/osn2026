@@ -59,6 +59,7 @@ export default function App() {
   // --- Lab Calculators State ---
   const [bitA, setBitA] = useState<number>(72);
   const [bitB, setBitB] = useState<number>(51);
+  const [shiftK, setShiftK] = useState<number>(3);
   const [numX, setNumX] = useState<number>(2025);
   const [numY, setNumY] = useState<number>(700);
   const [numM, setNumM] = useState<number>(67);
@@ -291,19 +292,24 @@ export default function App() {
   const bitwiseTableRows = useMemo(() => {
     const a = Math.max(0, bitA || 0);
     const b = Math.max(0, bitB || 0);
-    const k = Math.min(16, b);
+    const k = Math.max(0, Math.min(31, shiftK ?? 3));
     const pad = a > 255 || b > 255 ? 12 : 8;
     const fmt = (v: number) => (v >>> 0).toString(2).padStart(pad, '0');
 
     return [
-      { op: 'Bilangan A', dec: a, bin: `${fmt(a)}_2`, note: `popcount = ${popcount32(a)}` },
-      { op: 'Bilangan B', dec: b, bin: `${fmt(b)}_2`, note: `popcount = ${popcount32(b)}` },
-      { op: 'A & B (AND)', dec: a & b, bin: `${fmt(a & b)}_2`, note: '1 jika kedua bit 1' },
-      { op: 'A | B (OR)', dec: a | b, bin: `${fmt(a | b)}_2`, note: '1 jika salah satu bit 1' },
-      { op: 'A ^ B (XOR)', dec: a ^ b, bin: `${fmt(a ^ b)}_2`, note: '1 jika kedua bit berbeda' },
-      { op: `A << ${k} | A >> ${k}`, dec: `${a << k} | ${a >> k}`, bin: `${(a << k).toString(2)}_2 | ${(a >> k).toString(2)}_2`, note: `Kali/Bagi 2^${k}` }
+      { op: 'Bilangan A', dec: a, bin: `${fmt(a)}_2`, note: `popcount = ${popcount32(a)} (jumlah bit 1)` },
+      { op: 'Bilangan B', dec: b, bin: `${fmt(b)}_2`, note: `popcount = ${popcount32(b)} (jumlah bit 1)` },
+      { op: 'A & B (AND)', dec: a & b, bin: `${fmt(a & b)}_2`, note: '1 hanya jika kedua bit sama-sama bernilai 1' },
+      { op: 'A | B (OR)', dec: a | b, bin: `${fmt(a | b)}_2`, note: '1 jika salah satu atau kedua bit bernilai 1' },
+      { op: 'A ^ B (XOR)', dec: a ^ b, bin: `${fmt(a ^ b)}_2`, note: '1 jika kedua bit berbeda (paritas ganjil)' },
+      { op: `A << ${k} (Shift Left A)`, dec: (a << k) >>> 0, bin: `${((a << k) >>> 0).toString(2)}_2`, note: `Ekuivalen dengan A × 2^${k} = ${a} × ${2 ** k} = ${a * (2 ** k)}` },
+      { op: `A >> ${k} (Shift Right A)`, dec: a >> k, bin: `${fmt(a >> k)}_2`, note: `Ekuivalen dengan floor(A / 2^${k}) = floor(${a} / ${2 ** k}) = ${Math.floor(a / (2 ** k))}` },
+      { op: `B << ${k} (Shift Left B)`, dec: (b << k) >>> 0, bin: `${((b << k) >>> 0).toString(2)}_2`, note: `Ekuivalen dengan B × 2^${k} = ${b} × ${2 ** k} = ${b * (2 ** k)}` },
+      { op: `B >> ${k} (Shift Right B)`, dec: b >> k, bin: `${fmt(b >> k)}_2`, note: `Ekuivalen dengan floor(B / 2^${k}) = floor(${b} / ${2 ** k}) = ${Math.floor(b / (2 ** k))}` },
+      { op: `(A | B) >> ${k}`, dec: (a | b) >> k, bin: `${fmt((a | b) >> k)}_2`, note: `Contoh Soal: (${a} | ${b}) = ${a | b}, lalu digeser kanan ${k} bit = ${(a | b) >> k}` },
+      { op: `(A & B) << ${k}`, dec: ((a & b) << k) >>> 0, bin: `${(((a & b) << k) >>> 0).toString(2)}_2`, note: `Contoh Soal: (${a} & ${b}) = ${a & b}, lalu digeser kiri ${k} bit = ${((a & b) << k) >>> 0}` }
     ];
-  }, [bitA, bitB]);
+  }, [bitA, bitB, shiftK]);
 
   const numberTheoryResult = useMemo(() => {
     const x = Math.max(1, numX || 1);
@@ -442,18 +448,27 @@ export default function App() {
           <p className="text-[12.5px] text-[#C9C8C2] leading-relaxed">{card.question}</p>
 
           {/* Metadata & Key Answer Block */}
-          <div className="space-y-2 pt-1 text-[12px] border-t border-[#2C2C29]">
-            <div className="flex items-start gap-2 text-[#F2F1E8] font-mono">
-              <svg className="w-4 h-4 text-[#A09F98] shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span><strong className="text-white">Jawaban:</strong> {card.answer}</span>
+          <div className="space-y-3 pt-2 text-[12px] border-t border-[#2C2C29]">
+            <div className="p-3 rounded-xl bg-[#222220] border border-[#333330] space-y-1">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[#A09F98] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                KUNCI JAWABAN RESMI
+              </div>
+              <div className="text-white font-mono font-bold text-sm sm:text-base">
+                {card.answer}
+              </div>
             </div>
-            <div className="flex items-start gap-2 text-[#D8D7CE] leading-relaxed">
-              <svg className="w-4 h-4 text-[#A09F98] shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>{card.explanation}</span>
+
+            <div className="p-3.5 rounded-xl bg-[#1D1D1B] border border-[#2A2A28] space-y-1.5">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[#D5D4CA] flex items-center gap-1.5 font-semibold">
+                <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                ANALISIS &amp; ALASAN MENGAPA JAWABAN TERJADI
+              </div>
+              <div className="text-[#D8D7CE] text-[12.5px] leading-relaxed whitespace-pre-line">
+                {card.explanation}
+              </div>
             </div>
           </div>
 
@@ -513,7 +528,7 @@ export default function App() {
         key={card.id}
         id={`card-${card.id}`}
         onClick={(e) => toggleExpand(card.id, e)}
-        className={`rounded-2xl p-5 ${surfaceClass} space-y-4 cursor-pointer`}
+        className={`rounded-2xl p-5 ${surfaceClass} space-y-4 cursor-pointer group`}
       >
         <div className="flex items-start justify-between gap-2.5">
           <h3 className="font-heading text-[15px] font-bold text-[#161615] leading-snug">{card.title}</h3>
@@ -529,6 +544,11 @@ export default function App() {
         </div>
 
         <p className="text-[12.5px] text-[#6E6D68] leading-relaxed line-clamp-3">{card.question}</p>
+
+        <div className="text-[11.5px] text-[#787770] group-hover:text-[#161615] flex items-center gap-1 font-medium pt-0.5">
+          <span>Buka kunci &amp; analisis jawaban</span>
+          <span className="text-xs">↓</span>
+        </div>
 
         <div className="flex items-center justify-between pt-1">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#DCDCD4] text-[11px] font-mono font-medium text-[#161615] tabular-nums">
@@ -1343,7 +1363,7 @@ export default function App() {
                     <span className="px-2.5 py-1 rounded-lg bg-[#F2F1E8] text-xs font-mono font-semibold text-[#161615]">Basis-2</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-[#5A5953] mb-1">Bilangan A (Desimal)</label>
                       <input
@@ -1354,7 +1374,7 @@ export default function App() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#5A5953] mb-1">Bilangan B / Geser k</label>
+                      <label className="block text-xs font-medium text-[#5A5953] mb-1">Bilangan B (Desimal)</label>
                       <input
                         type="number"
                         value={bitB}
@@ -1362,6 +1382,39 @@ export default function App() {
                         className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCDCD4] bg-[#F9F9F6] font-mono text-sm text-[#161615] tabular-nums focus:outline-none focus:border-[#161615]"
                       />
                     </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-medium text-[#5A5953]">Pergeseran k (Shift)</label>
+                        <span className="text-[11px] font-mono text-[#8C8B84]">0–31 bit</span>
+                      </div>
+                      <input
+                        type="number"
+                        min={0}
+                        max={31}
+                        value={shiftK}
+                        onChange={(e) => setShiftK(Math.max(0, Math.min(31, parseInt(e.target.value, 10) || 0)))}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCDCD4] bg-[#F9F9F6] font-mono text-sm text-[#161615] tabular-nums focus:outline-none focus:border-[#161615]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Shift k Shortcuts */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-mono text-[#787770] mr-1">Ubah k:</span>
+                    {[1, 2, 3, 4, 5, 8, 16].map(kVal => (
+                      <button
+                        key={kVal}
+                        type="button"
+                        onClick={() => setShiftK(kVal)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
+                          shiftK === kVal
+                            ? 'bg-[#161615] text-white font-bold'
+                            : 'bg-[#F2F1E8] text-[#161615] hover:bg-[#E5E4DA]'
+                        }`}
+                      >
+                        k={kVal}
+                      </button>
+                    ))}
                   </div>
 
                   <div className="overflow-x-auto rounded-xl border border-[#E6E5E0]">
@@ -1371,7 +1424,7 @@ export default function App() {
                           <th className="py-2.5 px-3">Operasi</th>
                           <th className="py-2.5 px-3">Desimal</th>
                           <th className="py-2.5 px-3">Representasi Biner</th>
-                          <th className="py-2.5 px-3">Catatan / Popcount</th>
+                          <th className="py-2.5 px-3">Catatan / Langkah Perhitungan</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#EBEAE4]">
@@ -1389,22 +1442,22 @@ export default function App() {
 
                   <div className="flex flex-wrap gap-2 pt-1">
                     <button
-                      onClick={() => { setBitA(72); setBitB(51); }}
+                      onClick={() => { setBitA(72); setBitB(51); setShiftK(3); }}
                       className="px-3 py-1.5 rounded-lg bg-[#F2F1E8] hover:bg-[#E5E4DA] text-xs font-mono text-[#161615]"
                     >
                       Preset (72 | 51) &gt;&gt; 3
                     </button>
                     <button
-                      onClick={() => { setBitA(156); setBitB(89); }}
+                      onClick={() => { setBitA(156); setBitB(89); setShiftK(3); }}
                       className="px-3 py-1.5 rounded-lg bg-[#F2F1E8] hover:bg-[#E5E4DA] text-xs font-mono text-[#161615]"
                     >
-                      Preset 156 &amp; 89
+                      Preset (156 &amp; 89) &lt;&lt; 3
                     </button>
                     <button
-                      onClick={() => { setBitA(2024); setBitB(2025); }}
+                      onClick={() => { setBitA(2024); setBitB(2025); setShiftK(1); }}
                       className="px-3 py-1.5 rounded-lg bg-[#F2F1E8] hover:bg-[#E5E4DA] text-xs font-mono text-[#161615]"
                     >
-                      Soal 33: Thue-Morse (2024)
+                      Soal 33: Thue-Morse (2024, 2025)
                     </button>
                   </div>
                 </div>
@@ -1665,7 +1718,7 @@ export default function App() {
 
                   {/* Revealed Dark Solution */}
                   {fcRevealed && (
-                    <div className="rounded-2xl p-5 biz-card-dark space-y-3">
+                    <div className="rounded-2xl p-5 biz-card-dark space-y-3.5">
                       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#2E2E2B]">
                         <div>
                           <span className="text-[10px] font-mono uppercase tracking-wider text-[#A09F98] block">KUNCI JAWABAN RESMI</span>
@@ -1688,9 +1741,17 @@ export default function App() {
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs sm:text-sm text-[#D8D7CE] leading-relaxed">
-                        {fcDeck[fcIndex].explanation}
-                      </p>
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#D5D4CA] font-semibold flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          ANALISIS &amp; ALASAN MENGAPA JAWABAN TERJADI
+                        </span>
+                        <p className="text-xs sm:text-sm text-[#D8D7CE] leading-relaxed whitespace-pre-line">
+                          {fcDeck[fcIndex].explanation}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </>
